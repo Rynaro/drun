@@ -30,7 +30,7 @@ services:
       - redis
     networks:
       - app-network
-    command: ./bin/dev
+    command: ./bin/rails server
 
   postgres:
     image: postgres:12-alpine
