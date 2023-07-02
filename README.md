@@ -74,5 +74,3 @@ This project is licensed under the [MIT License](LICENSE).
 ## Acknowledgments
 
 This project has been influenced by the ideas and concepts behind [Docked](https://github.com/rails/docked), a tool designed to simplify Rails development environments using Docker. We acknowledge the inspiration and appreciate the effort put into creating [Docked](https://github.com/rails/docked).
-
-Feel free to customize this updated README file further to suit your specific project's details and requirements.
