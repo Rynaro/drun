@@ -27,7 +27,7 @@ Run the following commands to start the Rails development environment:
 ```bash
 docker build .
 ./drun.sh rails new . --database=postgresql
-vim .config/database.yml
+vim ./config/database.yml
 ```
 
 Edit the database configuration file in order to get the database connection working. Add the following code under the `default` node.
