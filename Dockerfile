@@ -1,11 +1,9 @@
-FROM ruby:3.2-slim
+ARG RUBY_VERSION=3.2
+FROM ruby:$RUBY_VERSION-alpine
 
-RUN curl -sL https://deb.nodesource.com/setup_19.x | bash -
-
-RUN apt-get update -qq && \
-      apt-get install -y build-essential libvips libpq-dev nodejs npm
-
-RUN npm install -g yarn
+RUN apk update && \
+      apk add --no-cache build-base vips-dev postgresql-dev nodejs npm && \
+      npm install -g yarn
 
 WORKDIR /app
 
@@ -16,3 +14,5 @@ ENV PATH="/bundle/ruby/3.2.0/bin:${PATH}"
 RUN gem install rails
 
 EXPOSE 3000
+
+ENTRYPOINT [""]
