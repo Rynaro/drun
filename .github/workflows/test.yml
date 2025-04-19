@@ -1,0 +1,39 @@
+name: drun Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Docker
+      uses: docker/setup-buildx-action@v1
+
+    - name: Install Podman
+      run: |
+        . /etc/os-release
+        sudo sh -c "echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list"
+        wget -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/xUbuntu_${VERSION_ID}/Release.key -O- | sudo apt-key add -
+        sudo apt-get update
+        sudo apt-get -y install podman
+
+    - name: Install podman-compose
+      run: |
+        sudo pip install podman-compose
+
+    - name: Run basic tests
+      run: |
+        chmod +x ./tests/basic-test.sh
+        ./tests/basic-test.sh
+
+    - name: Run comprehensive tests
+      run: |
+        chmod +x ./tests/comprehensive-test.sh
+        ./tests/comprehensive-test.sh
