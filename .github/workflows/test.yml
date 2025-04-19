@@ -7,33 +7,48 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  test-docker:
+    name: Test with Docker
+    runs-on: ubuntu-24.04
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Set up Docker
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v3
+
+    - name: Set environment variable to force Docker
+      run: |
+        echo "FORCE_DOCKER=1" >> $GITHUB_ENV
+
+    - name: Run drun tests with Docker
+      run: |
+        chmod +x ./tests/engine-test.sh
+        ./tests/engine-test.sh
+
+  test-podman:
+    name: Test with Podman
+    runs-on: ubuntu-24.04
+
+    steps:
+    - uses: actions/checkout@v4
 
     - name: Install Podman
       run: |
-        . /etc/os-release
-        sudo sh -c "echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list"
-        wget -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/xUbuntu_${VERSION_ID}/Release.key -O- | sudo apt-key add -
         sudo apt-get update
-        sudo apt-get -y install podman
+        sudo apt-get install -y podman
+        podman --version
 
     - name: Install podman-compose
       run: |
         sudo pip install podman-compose
+        podman-compose --version
 
-    - name: Run basic tests
+    - name: Set environment variable to force Podman
       run: |
-        chmod +x ./tests/basic-test.sh
-        ./tests/basic-test.sh
+        echo "FORCE_DOCKER=" >> $GITHUB_ENV
 
-    - name: Run comprehensive tests
+    - name: Run drun tests with Podman
       run: |
-        chmod +x ./tests/comprehensive-test.sh
-        ./tests/comprehensive-test.sh
+        chmod +x ./tests/engine-test.sh
+        ./tests/engine-test.sh
