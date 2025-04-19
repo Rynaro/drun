@@ -1,4 +1,4 @@
-# drun - Quick Start Ruby on Rails
+# drun.sh
 
 `drun` is a beginner-friendly tool for setting up Ruby on Rails projects with Docker or Podman. It's perfect for learning Rails or quickly setting up a new project.
 
