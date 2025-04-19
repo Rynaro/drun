@@ -1,4 +1,4 @@
-ARG RUBY_VERSION=3.2
+ARG RUBY_VERSION=3.3
 FROM ruby:$RUBY_VERSION-alpine
 
 RUN apk update && \
@@ -9,7 +9,7 @@ WORKDIR /app
 
 VOLUME "/bundle"
 RUN bundle config set --global path '/bundle'
-ENV PATH="/bundle/ruby/3.2.0/bin:${PATH}"
+ENV PATH="/bundle/ruby/3.3.0/bin:${PATH}"
 
 RUN gem install rails
 

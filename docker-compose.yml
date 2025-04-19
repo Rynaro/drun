@@ -33,7 +33,7 @@ services:
     command: ./bin/rails server
 
   postgres:
-    image: postgres:12-alpine
+    image: postgres:15-alpine
     restart: unless-stopped
     ports:
       - 5432:5432

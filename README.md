@@ -1,76 +1,74 @@
-# drun
+# drun.sh
 
-## Introduction
+`drun` is a beginner-friendly tool for setting up Ruby on Rails projects with Docker or Podman. It's perfect for learning Rails or quickly setting up a new project.
 
-`drun` is a command-line tool designed to simplify the setup and management of a Ruby on Rails development environment using Docker. It allows you to quickly get started with Rails, especially if you are new to the framework.
+<p align="center">
+  <img src="assets/logo.png" alt="drun logo" width="200" />
+</p>
 
-With `drun`, you can leverage Docker to handle all the dependencies required for your Rails application, providing a consistent environment across different machines. It eliminates the need for manual configuration and setup, making the development process more streamlined.
+## 📚 Documentation
 
-## Prerequisites
+- [Getting Started](GETTING_STARTED.md) - Quick setup and common commands
+- [Beginner's Guide](BEGINNERS_GUIDE.md) - Comprehensive guide for learning Rails
 
-Before using `drun`, make sure you have the following installed:
+## 🚀 Quick Start
 
-- Docker
-- Docker Compose
+### For Beginners
+1. Make sure you have [Docker](https://www.docker.com/get-started/) or [Podman](https://podman.io/getting-started/installation) installed
+2. Run:
+   ```bash
+   git clone https://github.com/Rynaro/drun.git myapp
+   cd myapp
+   chmod +x ./drun.sh ./drun-tutorial.sh
+   ./drun-tutorial.sh quickstart
+   ```
+3. Start your app:
+   ```bash
+   ./drun.sh serve
+   ```
+4. Visit http://localhost:3000 in your browser
 
-## Getting Started
-
-To get started with `drun`, follow these steps:
-
-1. Clone this repository: `git clone https://github.com/Rynaro/drun.git app`
-2. Change into the project directory: `cd app`
-
-### Starting the Development Environment
-
-Run the following commands to start the Rails development environment:
-
+### For Experienced Users
+If you just want the container management script:
 ```bash
-docker build .
-./drun.sh rails new . --database=postgresql
-vim ./config/database.yml
+curl -o drun.sh https://raw.githubusercontent.com/Rynaro/drun/main/drun.sh && chmod +x drun.sh
 ```
 
-Edit the database configuration file in order to get the database connection working. Add the following code under the `default` node.
+## 🧩 Available Templates
 
-```yaml
-  host: <%= ENV["POSTGRES_HOST"] %>
-  username: <%= ENV["POSTGRES_USER"] %>
-  password: <%= ENV["POSTGRES_PASSWORD"] %>
-```
-And finally:
+`drun` offers several templates to get you started:
 
-```bash
-./drun.sh serve
-```
+| Command | Description |
+|---------|-------------|
+| `./drun-tutorial.sh quickstart` | Creates a complete blog app with scaffolding - perfect for beginners! |
+| `./drun-tutorial.sh new:simple` | Creates a minimal API-only application |
+| `./drun-tutorial.sh new:full` | Creates a complete Rails application with frontend support |
+| `./drun-tutorial.sh new:tutorial` | Creates a learning-focused app with blog scaffolding |
 
-This command will spin up the necessary containers and configure the Rails environment for you. Once the environment is up and running, you can access your Rails application at `http://localhost:3000`.
+## 🛠️ Common Commands
 
-### Common Tasks
+| Command | Description |
+|---------|-------------|
+| `./drun.sh serve` | Start the application |
+| `./drun.sh console` | Open Rails console |
+| `./drun.sh db:migrate` | Run database migrations |
+| `./drun.sh test` | Run the test suite |
+| `./drun.sh help` | List all available commands |
 
-`drun` provides convenient commands for common Rails development tasks. Here are some examples:
+## 📦 Technical Details
 
-- Running rails commands: `./drun.sh rails db:create`, `./drun.sh rails console`
-- Running the server (and database containers): `./drun.sh serve`
+`drun` provides a complete development environment:
 
-Feel free to modify the `drun.sh` script to include additional commands specific to your project's requirements.
+- Ruby 3.3
+- Latest Rails
+- PostgreSQL 15 database
+- Redis for caching and background jobs
+- Works with both Docker and Podman
 
-> We do not want to create a layer over the Rails learning curve. We encourage you to run `rails` commands. But if you already are familiar with Rails, feel free to improve it. (See above)
-
-## Limitations
-
-Please note the following limitations of `drun`:
-
-- `drun` is primarily designed for beginners and intermediate developers to quickly set up a development environment. It may not include all the dependencies required for complex setups or production environments.
-- It focuses on the essential dependencies needed when running `rails new` without additional options. Dependencies such as PostgreSQL, Redis, or other services are not included by default.
-
-## Contributing
-
-Contributions to `drun` are welcome! If you have any suggestions, improvements, or feature requests, please feel free to open an issue or submit a pull request.
-
-## License
+## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
-This project has been influenced by the ideas and concepts behind [Docked](https://github.com/rails/docked), a tool designed to simplify Rails development environments using Docker. We acknowledge the inspiration and appreciate the effort put into creating [Docked](https://github.com/rails/docked).
+This project has been influenced by [Docked](https://github.com/rails/docked), a similar tool by the Rails team.
