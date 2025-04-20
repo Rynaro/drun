@@ -58,6 +58,16 @@ else
   echo "✅ Creating simple app with $ENGINE successful"
 fi
 
+# Install gems
+echo "Installing required gems..."
+./drun.sh bundle install
+if [ $? -ne 0 ]; then
+  echo "❌ Gem installation failed"
+  exit 1
+else
+  echo "✅ Gems installed successfully"
+fi
+
 # Test database commands
 echo "Testing database creation with $ENGINE..."
 ./drun.sh db:create

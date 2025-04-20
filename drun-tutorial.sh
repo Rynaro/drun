@@ -20,15 +20,15 @@ create_rails_app() {
   case "$app_type" in
     "simple")
       echo "Creating a simple Rails application (API only)..."
-      $COMPOSE_CMD run --rm rails rails new . $db_arg --api $extra_args
+      $COMPOSE_CMD run --rm rails rails new . $db_arg --api --skip-bundle $extra_args
       ;;
     "full")
       echo "Creating a complete Rails application with frontend assets..."
-      $COMPOSE_CMD run --rm rails rails new . $db_arg $extra_args
+      $COMPOSE_CMD run --rm rails rails new . $db_arg --skip-bundle $extra_args
       ;;
     "tutorial")
       echo "Creating a Rails tutorial application with blog scaffold..."
-      $COMPOSE_CMD run --rm rails rails new . $db_arg $extra_args
+      $COMPOSE_CMD run --rm rails rails new . $db_arg --skip-bundle $extra_args
 
       # Configure database and create basic scaffolding
       echo "Setting up database configuration..."
@@ -62,9 +62,15 @@ EOF
       ;;
     *)
       echo "Creating a custom Rails application..."
-      $COMPOSE_CMD run --rm rails rails new . $db_arg $extra_args
+      $COMPOSE_CMD run --rm rails rails new . $db_arg --skip-bundle $extra_args
       ;;
   esac
+
+  # Install dependencies
+  if [ -f Gemfile ]; then
+    echo "Installing dependencies..."
+    $COMPOSE_CMD run --rm rails bundle install
+  fi
 
   # Post-setup tips
   echo ""
