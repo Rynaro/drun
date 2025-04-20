@@ -51,7 +51,7 @@ fi
 
 # Test creating a simple app
 echo "Testing creating a simple app with $ENGINE..."
-./drun-tutorial.sh new:simple
+echo "n" | ./drun-tutorial.sh new:simple
 if [ $? -ne 0 ]; then
   echo "❌ Creating simple app with $ENGINE failed"
   exit 1
