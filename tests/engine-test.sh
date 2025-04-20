@@ -8,9 +8,9 @@ set -e  # Exit on any error
 
 # Determine which engine we're testing
 if [ -n "$FORCE_DOCKER" ]; then
-  ENGINE="Docker"
+  ENGINE="docker"
 else
-  ENGINE="Podman"
+  ENGINE="podman"
 fi
 
 echo "==== DRUN $ENGINE TESTING SUITE ===="
