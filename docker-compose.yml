@@ -20,13 +20,10 @@ services:
       - REDIS_PERSISTENCE_URL=redis://redis:6379
       - RAILS_ENV=development
       - BINDING=0.0.0.0
-      - BUNDLE_PATH=/bundle
-      - BUNDLE_WITHOUT=development:test
     volumes:
       - .:/app:delegated
       - node_modules:/app/node_modules
       - cache:/app/tmp/cache
-      - bundle:/bundle:delegated
     depends_on:
       - postgres
       - redis
@@ -65,4 +62,3 @@ volumes:
   redis:
   node_modules:
   cache:
-  bundle:

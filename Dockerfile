@@ -10,16 +10,9 @@ RUN apk update && \
 WORKDIR /app
 
 # Configure bundler
-RUN bundle config set --global path 'vendor/bundle' && \
+RUN gem install bundler --no-document && \
+    bundle config set --global path 'vendor/bundle' && \
     bundle config set --global without 'development test'
-
-# Install bundler
-RUN gem install bundler --no-document
-
-# Configure bundler path
-VOLUME "/bundle"
-RUN bundle config set --global path '/bundle'
-ENV PATH="/bundle/ruby/3.3.0/bin:${PATH}"
 
 # Install Rails
 RUN gem install rails
