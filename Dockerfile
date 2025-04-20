@@ -2,7 +2,7 @@ ARG RUBY_VERSION=3.3
 FROM ruby:$RUBY_VERSION-alpine
 
 RUN apk update && \
-      apk add --no-cache build-base vips-dev postgresql-dev nodejs npm && \
+      apk add --no-cache build-base vips-dev postgresql-dev nodejs npm git && \
       npm install -g yarn
 
 WORKDIR /app
