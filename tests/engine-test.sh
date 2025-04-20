@@ -5,6 +5,7 @@
 # Controlled by the FORCE_DOCKER environment variable
 
 set -e  # Exit on any error
+set -x  # Print commands and their arguments as they are executed
 
 # Determine which engine we're testing
 if [ -n "$FORCE_DOCKER" ]; then
@@ -56,6 +57,16 @@ if [ $? -ne 0 ]; then
   exit 1
 else
   echo "✅ Creating simple app with $ENGINE successful"
+fi
+
+# Verify application structure
+echo "Verifying application structure..."
+ls -la
+if [ -d "app" ]; then
+  echo "✅ Application directory exists"
+else
+  echo "❌ Application directory missing"
+  exit 1
 fi
 
 # Install gems
