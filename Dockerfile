@@ -3,7 +3,7 @@ FROM ruby:$RUBY_VERSION-alpine
 
 # Install system dependencies
 RUN apk update && \
-    apk add --no-cache build-base vips-dev postgresql-dev nodejs npm git libyaml-dev && \
+    apk add --no-cache build-base vips-dev postgresql-dev nodejs npm git yaml-dev && \
     npm install -g yarn
 
 # Set up the working directory
