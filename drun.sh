@@ -2,6 +2,17 @@
 
 set -e
 
+# Function to detect compose command format
+detect_compose_cmd() {
+  if command -v docker-compose >/dev/null 2>&1; then
+    echo "docker-compose"
+  elif docker compose version >/dev/null 2>&1; then
+    echo "docker compose"
+  else
+    echo "docker-compose"  # Default fallback
+  fi
+}
+
 # Detect container engine (Docker or Podman)
 if command -v podman >/dev/null 2>&1 && [ -z "$FORCE_DOCKER" ]; then
   CONTAINER_ENGINE="podman"
@@ -18,7 +29,7 @@ if command -v podman >/dev/null 2>&1 && [ -z "$FORCE_DOCKER" ]; then
   fi
 else
   CONTAINER_ENGINE="docker"
-  COMPOSE_CMD="docker-compose"
+  COMPOSE_CMD=$(detect_compose_cmd)
 fi
 
 echo "Using container engine: $CONTAINER_ENGINE with compose: $COMPOSE_CMD"
