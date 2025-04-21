@@ -89,7 +89,6 @@ else
   echo "✅ Rails version check with $ENGINE successful"
 fi
 
-
 # Test database commands
 echo "Testing database creation with $ENGINE..."
 ./drun.sh db:create

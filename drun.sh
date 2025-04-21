@@ -55,29 +55,29 @@ if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
       ;;
     help)
       cat <<-EOF
-      drun.sh — Easy Containerized Rails!
+drun.sh — Easy Containerized Rails
 
-      Usage: ./drun.sh <command> [args...]
+Usage: ./drun.sh <command> [args...]
 
-      Commands:
-        serve               Start all containers
-        build               Build images only
-        console             Rails console
-        db:setup            Create + migrate + seed
-        db:migrate          Run migrations
-        db:create           Create database
-        test                Run test suite
-        routes              List Rails routes
+Commands:
+  serve               Start all containers
+  build               Build images only
+  console             Rails console
+  db:setup            Create + migrate + seed
+  db:migrate          Run migrations
+  db:create           Create database
+  test                Run test suite
+  routes              List Rails routes
 
-      Engine control:
-        engine              Show current engine/compose
-        force-docker        Switch to Docker for this session
-        force-podman        Switch to Podman for this session
+Engine control:
+  engine              Show current engine/compose
+  force-docker        Switch to Docker for this session
+  force-podman        Switch to Podman for this session
 
-      Any other <command> gets exec’d inside the Rails container:
-        ./drun.sh rails g model User name:string
+Any other <command> gets exec’d inside the Rails container:
+  ./drun.sh rails g model User name:string
 
-      EOF
+EOF
       ;;
     *)
       exec $COMPOSE_CMD run --rm rails sh -c "$cmd ${*:-}"
