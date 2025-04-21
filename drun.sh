@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -e
 
 # Detect which compose command to use
 detect_compose_cmd() {
