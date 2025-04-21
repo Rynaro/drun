@@ -24,6 +24,7 @@ services:
       - .:/app:delegated
       - node_modules:/app/node_modules
       - cache:/app/tmp/cache
+      - bundle:/bundle:delegated
     depends_on:
       - postgres
       - redis
@@ -62,3 +63,4 @@ volumes:
   redis:
   node_modules:
   cache:
+  bundle:

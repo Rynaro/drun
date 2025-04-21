@@ -79,16 +79,6 @@ else
   echo "✅ Gems installed successfully"
 fi
 
-# Test database commands
-echo "Testing database creation with $ENGINE..."
-./drun.sh db:create
-if [ $? -ne 0 ]; then
-  echo "❌ Database creation with $ENGINE failed"
-  exit 1
-else
-  echo "✅ Database creation with $ENGINE successful"
-fi
-
 # Test Rails version check
 echo "Testing Rails version check with $ENGINE..."
 ./drun.sh rails -v
@@ -97,6 +87,17 @@ if [ $? -ne 0 ]; then
   exit 1
 else
   echo "✅ Rails version check with $ENGINE successful"
+fi
+
+
+# Test database commands
+echo "Testing database creation with $ENGINE..."
+./drun.sh db:create
+if [ $? -ne 0 ]; then
+  echo "❌ Database creation with $ENGINE failed"
+  exit 1
+else
+  echo "✅ Database creation with $ENGINE successful"
 fi
 
 # Test db:migrate

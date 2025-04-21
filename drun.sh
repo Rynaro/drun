@@ -1,109 +1,86 @@
-#!/bin/sh
+#!/usr/bin/env bash
+set -euo pipefail
 
-set -e
-
-# Function to detect compose command format
+# Detect which compose command to use
 detect_compose_cmd() {
   if command -v docker-compose >/dev/null 2>&1; then
     echo "docker-compose"
-  elif docker compose version >/dev/null 2>&1; then
+  elif command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
     echo "docker compose"
   else
-    echo "docker-compose"  # Default fallback
+    echo "docker-compose"
   fi
 }
 
-# Detect container engine (Docker or Podman)
-if command -v podman >/dev/null 2>&1 && [ -z "$FORCE_DOCKER" ]; then
+# Pick container engine
+if command -v podman >/dev/null 2>&1 && [ -z "${FORCE_DOCKER-}" ]; then
   CONTAINER_ENGINE="podman"
-  COMPOSE_CMD="podman-compose"
-  # Check if podman-compose is available, use podman play kube as fallback
-  if ! command -v podman-compose >/dev/null 2>&1; then
-    if command -v podman-compose >/dev/null 2>&1; then
-      COMPOSE_CMD="podman-compose"
-    else
-      echo "Warning: podman-compose not found. Please install it for better experience."
-      echo "Defaulting to docker-compose..."
-      COMPOSE_CMD="docker-compose"
-    fi
+  if command -v podman-compose >/dev/null 2>&1; then
+    COMPOSE_CMD="podman-compose"
+  else
+    echo "⚠️  podman-compose not found; falling back to Docker Compose"
+    CONTAINER_ENGINE="docker"
+    COMPOSE_CMD="$(detect_compose_cmd)"
   fi
 else
   CONTAINER_ENGINE="docker"
-  COMPOSE_CMD=$(detect_compose_cmd)
+  COMPOSE_CMD="$(detect_compose_cmd)"
 fi
 
-echo "Using container engine: $CONTAINER_ENGINE with compose: $COMPOSE_CMD"
+echo "Using engine: $CONTAINER_ENGINE  ·  compose: $COMPOSE_CMD"
 
-# Only execute the main case statement if the script is run directly
-# This allows the script to be sourced by other scripts
-if [ "$0" = "$BASH_SOURCE" ] || [ "$0" = "./drun.sh" ]; then
-  case "$1" in
-    "engine")
-      echo "Current container engine: $CONTAINER_ENGINE"
-      echo "Current compose command: $COMPOSE_CMD"
+# Only run commands if script is executed (not sourced)
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  cmd=${1:-help}
+  shift || true
+
+  case "$cmd" in
+    engine)
+      echo "Engine: $CONTAINER_ENGINE"
+      echo "Compose: $COMPOSE_CMD"
       ;;
-    "force-docker")
+    force-docker)
       export FORCE_DOCKER=1
-      echo "Forcing Docker for this session"
-      exec $0 "${@:2}"
+      exec "$0" "${@}"
       ;;
-    "force-podman")
-      export FORCE_DOCKER=
-      echo "Forcing Podman for this session"
-      exec $0 "${@:2}"
+    force-podman)
+      unset FORCE_DOCKER
+      exec "$0" "${@}"
       ;;
-    "serve")
-      $COMPOSE_CMD up
+    serve|build)
+      exec $COMPOSE_CMD "$cmd"
       ;;
-    "build")
-      $COMPOSE_CMD build
+    console|db:setup|db:migrate|db:create|test|routes)
+      exec $COMPOSE_CMD run --rm rails ./bin/rails "$cmd"
       ;;
-    "console")
-      $COMPOSE_CMD run --rm rails ./bin/rails console
-      ;;
-    "db:setup")
-      $COMPOSE_CMD run --rm rails ./bin/rails db:setup
-      ;;
-    "db:migrate")
-      $COMPOSE_CMD run --rm rails ./bin/rails db:migrate
-      ;;
-    "db:create")
-      $COMPOSE_CMD run --rm rails ./bin/rails db:create
-      ;;
-    "test")
-      $COMPOSE_CMD run --rm rails ./bin/rails test
-      ;;
-    "routes")
-      $COMPOSE_CMD run --rm rails ./bin/rails routes
-      ;;
-    "help")
-      echo "drun - Development environment for Ruby on Rails using Docker/Podman"
-      echo ""
-      echo "CONTAINER MANAGEMENT COMMANDS:"
-      echo "  serve                   Start all containers"
-      echo "  build                   Build all containers"
-      echo "  console                 Open Rails console"
-      echo "  db:setup                Set up the database"
-      echo "  db:migrate              Run database migrations"
-      echo "  db:create               Create the database"
-      echo "  test                    Run tests"
-      echo "  routes                  Show Rails routes"
-      echo ""
-      echo "CONTAINER ENGINE COMMANDS:"
-      echo "  engine                  Show current container engine"
-      echo "  force-docker            Force using Docker for this session"
-      echo "  force-podman            Force using Podman for this session"
-      echo ""
-      echo "OTHER COMMANDS:"
-      echo "  help                    Show this help message"
-      echo "  [command]               Run arbitrary command in Rails container"
-      echo ""
-      echo "Examples:"
-      echo "  ./drun.sh serve         Start the Rails server and all containers"
-      echo "  ./drun.sh rails g model User name:string email:string"
+    help)
+      cat <<-EOF
+      drun.sh — Easy Containerized Rails!
+
+      Usage: ./drun.sh <command> [args...]
+
+      Commands:
+        serve               Start all containers
+        build               Build images only
+        console             Rails console
+        db:setup            Create + migrate + seed
+        db:migrate          Run migrations
+        db:create           Create database
+        test                Run test suite
+        routes              List Rails routes
+
+      Engine control:
+        engine              Show current engine/compose
+        force-docker        Switch to Docker for this session
+        force-podman        Switch to Podman for this session
+
+      Any other <command> gets exec’d inside the Rails container:
+        ./drun.sh rails g model User name:string
+
+      EOF
       ;;
     *)
-      $COMPOSE_CMD run --rm rails sh -c "$*"
+      exec $COMPOSE_CMD run --rm rails sh -c "$cmd ${*:-}"
       ;;
   esac
 fi
