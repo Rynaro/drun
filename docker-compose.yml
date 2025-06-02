@@ -1,66 +1,78 @@
-version: "3"
-
 services:
-  base: &base
+  x-project-labels:
+    com.docker.compose.project: ${PROJECT_NAME:-drun}
+    
+  app:
     build:
       context: .
-      dockerfile: ./Dockerfile
-    tty: true
+      dockerfile: Dockerfile
+    image: drun/rails:latest
+    container_name: drun_app
     stdin_open: true
-    image: app/development
-
-  rails:
-    <<: *base
+    tty: true
     ports:
-      - 3000:3000
+      - "${PORT:-3000}:3000"
     environment:
-      - POSTGRES_HOST=postgres
-      - POSTGRES_USER=app
-      - POSTGRES_PASSWORD=app
-      - REDIS_PERSISTENCE_URL=redis://redis:6379
-      - RAILS_ENV=development
-      - BINDING=0.0.0.0
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-drun_development}
+      POSTGRES_USER: ${POSTGRES_USER:-drun}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-drun_secure}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      RAILS_ENV: ${RAILS_ENV:-development}
+      BINDING: ${BINDING:-0.0.0.0}
     volumes:
-      - .:/app:delegated
-      - node_modules:/app/node_modules
-      - cache:/app/tmp/cache
-      - bundle:/bundle:delegated
+      - .:/opt/app:cached
+      - bundle_cache:/var/lib/bundle
+      - node_modules_cache:/opt/app/node_modules
     depends_on:
-      - postgres
-      - redis
-    networks:
-      - app-network
-    command: ./bin/rails server
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: ["./bin/rails", "server"]
+    restart: unless-stopped
 
   postgres:
-    image: postgres:15-alpine
-    restart: unless-stopped
-    ports:
-      - 5432:5432
-    volumes:
-      - postgres:/var/lib/postgresql/data
+    image: postgres:17.5-alpine
+    container_name: drun_postgres
     environment:
-      - POSTGRES_DB=app
-      - POSTGRES_USER=app
-      - POSTGRES_PASSWORD=app
-    networks:
-      - app-network
+      POSTGRES_DB: ${POSTGRES_DB:-drun_development}
+      POSTGRES_USER: ${POSTGRES_USER:-drun}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-drun_secure}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-drun} -d ${POSTGRES_DB:-drun_development}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
 
   redis:
-    image: redis:alpine
-    restart: always
+    image: redis:8-alpine
+    container_name: drun_redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    volumes:
+      - redis_data:/data
     ports:
-      - 6379:6379
-    networks:
-      - app-network
-
-networks:
-  app-network:
-    driver: bridge
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
 
 volumes:
-  postgres:
-  redis:
-  node_modules:
-  cache:
-  bundle:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  bundle_cache:
+    driver: local
+  node_modules_cache:
+    driver: local
