@@ -8,7 +8,7 @@
 
 ## 📚 Documentation
 
-- [Getting Started](GETTING_STARTED.md) - Quick setup and common commands
+- 🚧 Under Construction 🚧
 
 ## 🚀 Quick Start
 
