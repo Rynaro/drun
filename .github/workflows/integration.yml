@@ -1,0 +1,50 @@
+name: drun Integration Test
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Check Docker Compose availability
+        run: docker compose version
+
+      - name: Generate Rails application
+        run: |
+          ./drun.sh rails new . --skip-bundle
+          ./drun.sh bundle install
+
+      - name: Build containers
+        run: ./drun.sh build
+
+      - name: Start services
+        run: |
+          ./drun.sh serve > serve.log 2>&1 &
+          echo $! > serve.pid
+          sleep 45
+
+      - name: Check container status
+        run: ./drun.sh ps
+
+      - name: Verify volumes
+        run: docker volume ls
+
+      - name: Run Rails about
+        run: ./drun.sh rails about
+
+      - name: Stop services
+        run: |
+          kill $(cat serve.pid)
+          ./drun.sh down
+
+      - name: Cleanup
+        run: ./drun.sh clean
+
+      - name: Display logs
+        if: always()
+        run: cat serve.log
