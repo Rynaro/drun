@@ -1,13 +1,10 @@
 services:
-  x-project-labels:
-    com.docker.compose.project: ${PROJECT_NAME:-drun}
-    
-  app:
+  rails:
     build:
       context: .
       dockerfile: Dockerfile
     image: drun/rails:latest
-    container_name: drun_app
+    container_name: ${PROJECT_NAME:-drun}_rails
     stdin_open: true
     tty: true
     ports:
@@ -22,19 +19,21 @@ services:
       BINDING: ${BINDING:-0.0.0.0}
     volumes:
       - .:/opt/app:cached
-      - bundle_cache:/var/lib/bundle
+      - bundle_cache:/var/bundle
       - node_modules_cache:/opt/app/node_modules
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_started
-    command: ["./bin/rails", "server"]
+    command: ["bash"] # Use bash to allow all sorts of commands from drun.sh
     restart: unless-stopped
+    labels:
+      - "com.docker.compose.project=${PROJECT_NAME:-drun}"
 
   postgres:
     image: postgres:17.5-alpine
-    container_name: drun_postgres
+    container_name: ${PROJECT_NAME:-drun}_postgres
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-drun_development}
       POSTGRES_USER: ${POSTGRES_USER:-drun}
@@ -44,6 +43,8 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
+    labels:
+      - "com.docker.compose.project=${PROJECT_NAME:-drun}"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-drun} -d ${POSTGRES_DB:-drun_development}"]
       interval: 10s
@@ -54,12 +55,14 @@ services:
 
   redis:
     image: redis:8-alpine
-    container_name: drun_redis
+    container_name: ${PROJECT_NAME:-drun}_redis
     command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
     volumes:
       - redis_data:/data
     ports:
       - "${REDIS_PORT:-6379}:6379"
+    labels:
+      - "com.docker.compose.project=${PROJECT_NAME:-drun}"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s

@@ -1,77 +1,85 @@
+# drun - Simple Docker Runner for Rails Development
+# Optimized for quick start and existing Rails environments
+
 ARG RUBY_VERSION=3.4
-ARG APP_FOLDER_PATH=/opt/app
-ARG DRUN_USER=drunner
-ARG DRUN_GROUP=drunner
-ARG BUNDLE_PATH=/var/bundle
+# ARG NODE_VERSION=20 # Future improvement, currently using Alpine's default node version
 
-# Build stage
-FROM ruby:$RUBY_VERSION-alpine AS builder
+# Build stage - Install dependencies and build tools
+FROM ruby:${RUBY_VERSION}-alpine AS builder
 
-# Re-declare ARGs for builder stage
-ARG APP_FOLDER_PATH
-ARG DRUN_USER
-ARG DRUN_GROUP
-ARG BUNDLE_PATH
-
-# Install build dependencies and clean up in the same layer
-RUN apk update && \
-    apk add --no-cache \
+# Install build dependencies
+RUN apk add --no-cache \
     build-base \
-    vips-dev \
     postgresql-dev \
+    vips-dev \
+    git \
     nodejs \
-    npm && \
-    npm install -g yarn && \
-    rm -rf /var/cache/apk/*
+    npm \
+    yarn \
+    && npm install -g yarn \
+    && rm -rf /var/cache/apk/*
 
-# Set up bundle config
-WORKDIR ${APP_FOLDER_PATH}
-RUN mkdir -p ${BUNDLE_PATH} && \
-    bundle config set --global path '${BUNDLE_PATH}' && \
-    gem install rails
+# Install Rails globally (for quick start)
+RUN gem install rails bundler --no-document
 
-# Final stage
-FROM ruby:$RUBY_VERSION-alpine
+# Runtime stage - Clean and secure
+FROM ruby:${RUBY_VERSION}-alpine
 
-# Re-declare ARGs for final stage
-ARG APP_FOLDER_PATH
-ARG DRUN_USER
-ARG DRUN_GROUP
-ARG BUNDLE_PATH
 
-# Install runtime dependencies and clean up in the same layer
-RUN apk update && \
-    apk add --no-cache \
-    vips \
+# Install runtime dependencies (including build-base for native gems)
+RUN apk add --no-cache \
     postgresql-libs \
+    vips \
     nodejs \
-    tzdata && \
-    rm -rf /var/cache/apk/*
+    yarn \
+    git \
+    bash \
+    curl \
+    tzdata \
+    build-base \
+    yaml-dev \
+    && rm -rf /var/cache/apk/*
 
-# Create non-root user and set up app directory
-RUN addgroup -S ${DRUN_GROUP} && \
-    adduser -S ${DRUN_USER} -G ${DRUN_GROUP} && \
-    mkdir -p ${APP_FOLDER_PATH} && \
-    chown -R ${DRUN_USER}:${DRUN_GROUP} ${APP_FOLDER_PATH}
+ARG BUNDLE_PATH=/var/bundle
+# Create non-root user with proper permissions
+RUN addgroup -g 1000 -S drunner && \
+    adduser -u 1000 -S drunner -G drunner -s /bin/bash && \
+    mkdir -p /opt/app ${BUNDLE_PATH} && \
+    chown -R drunner:drunner /opt/app ${BUNDLE_PATH}
 
-WORKDIR ${APP_FOLDER_PATH}
+# Copy Rails and bundler from builder
+COPY --from=builder /usr/local/bundle /usr/local/bundle
 
-# Create bundle directory and copy from builder
-RUN mkdir -p ${BUNDLE_PATH}
-COPY --from=builder --chown=${DRUN_USER}:${DRUN_GROUP} ${BUNDLE_PATH} ${BUNDLE_PATH}
-ENV PATH="${BUNDLE_PATH}/ruby/3.4.0/bin:${PATH}"
+# Set working directory
+WORKDIR /opt/app
+
+ENV BUNDLE_PATH=${BUNDLE_PATH}
+# Configure bundle to use shared volume for gems
+RUN bundle config set --global path "${BUNDLE_PATH}" && \
+    bundle config set --global bin '/opt/app/bin' && \
+    bundle config set --global deployment false
 
 # Switch to non-root user
-USER ${DRUN_USER}
+USER drunner
 
-# Add metadata labels
-LABEL maintainer="drun Team" \
-      version="2.0" \
-      description="Docker RUNner for Rails" \
-      org.opencontainers.image.source="https://github.com/Rynaro/drun"
+# Environment variables for Rails development
+ENV RAILS_ENV=development \
+    BINDING=0.0.0.0 \
+    PORT=3000 \
+    RAILS_LOG_TO_STDOUT=true \
+    RAILS_SERVE_STATIC_FILES=true
 
-# Expose port
+# Expose Rails port
 EXPOSE 3000
 
-# Use exec form for ENTRYPOINT
+# Metadata labels
+LABEL maintainer="drun Team" \
+      version="2.1.2" \
+      description="Simple Docker Runner for Rails Development" \
+      org.opencontainers.image.source="https://github.com/Rynaro/drun" \
+      org.opencontainers.image.title="drun" \
+      org.opencontainers.image.description="Docker container optimized for Rails development" \
+      org.opencontainers.image.vendor="drun Team"
+
+# Override Ruby's entrypoint to avoid to open CLI by default
 ENTRYPOINT [""]

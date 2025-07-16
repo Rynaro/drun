@@ -1,0 +1,62 @@
+# Git and version control
+.git
+.gitignore
+.ruby-lsp
+
+# Dependencies
+node_modules
+vendor/bundle
+
+# Logs
+*.log
+log/
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Temporary files
+.tmp
+tmp/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+README*
+
+# Testing
+spec/
+test/
+
+# Rails cache
+tmp/cache/
+
+# Assets
+public/assets/
+public/packs/
+public/packs-test/
+
+# Storage
+storage/
+
+# Compiled output
+dist/
+build/
