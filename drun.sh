@@ -3,13 +3,13 @@
 set -e
 
 # Simple Docker runner for Rails development
-COMPOSE_CMD="docker-compose"
-DRUN_VERSION="2.0.0"
+COMPOSE_CMD="docker compose"
+DRUN_VERSION="2.1.2"
 PROJECT_NAME="${PWD##*/}"
 
 # Helper functions
 ensure_built() {
-  if ! docker-compose ps | grep -q "Up\|running"; then
+  if ! docker-compose ps rails | grep -q "Up\|running"; then
     echo "No containers running. Building and starting..."
     docker-compose up -d
   fi
@@ -45,7 +45,7 @@ show_status() {
 run_rails_command() {
   ensure_built
   shift
-  $COMPOSE_CMD exec rails ./bin/rails "$@"
+  $COMPOSE_CMD exec rails rails "$@"
 }
 
 run_rake_task() {
@@ -62,8 +62,9 @@ run_bundle_command() {
 
 run_tests() {
   ensure_built
-  $COMPOSE_CMD exec rails ./bin/rails test "${@:2}"
+  $COMPOSE_CMD exec rails rails test "${@:2}"
 }
+
 
 # Cleanup functions
 clean_project_containers() {
@@ -112,6 +113,20 @@ clean_project_networks() {
 
 # Main command handling
 case "$1" in
+  "suggested"|"new-project")
+    echo -e "\033[1;36m🚀 Suggested New Project Commands:\033[0m"
+    echo ""
+    echo -e "\033[1;32mFor preserving drun configuration (recommended):\033[0m"
+    echo -e "  \033[1;33m./drun.sh rails new . --skip-docker --database=postgresql\033[0m"
+    echo -e "  \033[0;37m└─ Creates Rails app in current directory with drun Docker setup\033[0m"
+    echo ""
+    echo -e "\033[1;34mFor brand new Rails project with official Docker images:\033[0m"
+    echo -e "  \033[1;33m./drun.sh rails new <myapp> --database=postgresql\033[0m"
+    echo -e "  \033[0;37m└─ Creates Rails app with Rails official Docker configuration\033[0m"
+    echo ""
+    echo -e "\033[1;35m💡 Pro tip: Use --skip-docker to keep your custom drun Dockerfile!\033[0m"
+    echo ""
+    ;;
   "build")
     echo "Building containers..."
     $COMPOSE_CMD build
@@ -134,7 +149,7 @@ case "$1" in
     ;;
   "console")
     ensure_built
-    $COMPOSE_CMD exec rails ./bin/rails console
+    $COMPOSE_CMD exec rails rails console
     ;;
   "rails")
     run_rails_command "$@"
@@ -166,20 +181,25 @@ case "$1" in
     ;;
   "thanks")
     echo ""
-    echo "  ____  ____  _   _ _   _ "
-    echo " |  _ \|  _ \| | | | \ | |"
-    echo " | | | | |_) | | | |  \| |"
-    echo " | |_| |  _ <| |_| | |\  |"
-    echo " |____/|_| \_\\\___/|_| \_|"
+    echo "        ██████╗  ██████╗  ██╗   ██╗ ███╗   ██╗"
+    echo "        ██╔══██║ ██╔══██║ ██║   ██║ ████╗  ██║"
+    echo "        ██║  ██║ █████╔╝  ██║   ██║ ██╔██╗ ██║"
+    echo "        ██║  ██║ ██╔══██║ ██║   ██║ ██║╚██╗██║"
+    echo "        ██████╔╝ ██║  ██║ ╚██████╔╝ ██║ ╚████║"
+    echo "        ╚═════╝  ╚═╝  ╚═╝  ╚═════╝  ╚═╝  ╚═══╝.sh"
     echo ""
-    echo "Version: $DRUN_VERSION - Obsidian Pickaxe"
+    echo "        🐳 Docker Runner for Rails Development 🚀"
+    echo "        Version: $DRUN_VERSION - Obsidian Pickaxe"
     echo ""
-    echo "Thank you for using drun.sh! 🚀"
-    echo "Your development workflow just got better!"
+    echo "        Thank you for using drun.sh!"
+    echo "        Your development workflow just got better! ✨"
     echo ""
     ;;
   "help"|"")
     echo "drun - Simple Docker Runner for Rails Development"
+    echo ""
+    echo "QUICK START:"
+    echo "  suggested, new-project  Show suggested commands for new Rails projects"
     echo ""
     echo "CONTAINER COMMANDS:"
     echo "  build                   Build containers"
@@ -206,6 +226,7 @@ case "$1" in
     echo "  thanks                  Show appreciation message"
     echo ""
     echo "EXAMPLES:"
+    echo "  ./drun.sh suggested                          # Show new project commands"
     echo "  ./drun.sh build                              # Build containers"
     echo "  ./drun.sh up                                 # Start development server"
     echo "  ./drun.sh rails generate model User name:string"
